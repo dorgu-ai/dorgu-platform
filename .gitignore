@@ -1,0 +1,49 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Go
+*.test
+*.out
+vendor/
+go.work
+
+# Build artifacts
+/dorgu-platform
+/server
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Frontend
+web/node_modules/
+web/dist/
+web/.env
+web/.env.local
+web/.vite/
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
+# Test coverage
+coverage.txt
+*.coverprofile
+
+# Temporary files
+*.log
+*.tmp
+.env
+.env.local
