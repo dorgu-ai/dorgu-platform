@@ -20,7 +20,7 @@ build: frontend ## Build backend with embedded frontend
 
 run: ## Run backend in development mode
 	@echo "Starting backend server..."
-	go run ./cmd/server/main.go
+	go run ./cmd/server/main.go --port 8080
 
 test: ## Run Go tests
 	@echo "Running tests..."
