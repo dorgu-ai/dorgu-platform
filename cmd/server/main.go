@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"os"
 
@@ -9,18 +9,18 @@ import (
 )
 
 func main() {
-	// Placeholder for standalone server binary
-	// Agent 2 will implement the actual server logic
+	port := flag.Int("port", 8080, "HTTP server port")
+	kubeconfig := flag.String("kubeconfig", os.Getenv("KUBECONFIG"), "Path to kubeconfig file")
+	context := flag.String("context", "", "Kubernetes context to use")
+	flag.Parse()
 
-	fmt.Println("Dorgu Platform Server")
-	fmt.Println("This is a placeholder. Run 'make build' after Agent 2 completes.")
-
-	srv := &server.Server{
-		Port:       8080,
-		KubeConfig: os.Getenv("KUBECONFIG"),
-		Context:    "",
+	config := &server.Config{
+		Port:       *port,
+		KubeConfig: *kubeconfig,
+		Context:    *context,
 	}
 
+	srv := server.NewServer(config)
 	if err := srv.Start(); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}

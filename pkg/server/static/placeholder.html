@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dorgu Platform</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        .status { color: #28a745; }
+        a { color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Dorgu Platform</h1>
+    <p class="status">Backend is running</p>
+    <p>The frontend will be available after Agent 4 completes the React build.</p>
+
+    <h2>API Endpoints</h2>
+    <ul>
+        <li><a href="/api/clusters">GET /api/clusters</a> - List all clusters</li>
+        <li>GET /api/clusters/:name - Get cluster details</li>
+    </ul>
+
+    <h2>Next Steps</h2>
+    <p>Agents 3, 4, 5, 6, 7 will add:</p>
+    <ul>
+        <li>Kubernetes watcher for real ClusterPersona data</li>
+        <li>React frontend with cluster visualization</li>
+        <li>WebSocket real-time updates</li>
+    </ul>
+</body>
+</html>
