@@ -1,4 +1,4 @@
-.PHONY: help build run test clean frontend lint
+.PHONY: help build run test clean frontend frontend-dev lint deps
 
 # Variables
 BINARY_NAME=dorgu-platform
@@ -30,10 +30,13 @@ lint: ## Run linters
 	@echo "Running linters..."
 	golangci-lint run ./...
 
-frontend: ## Build frontend
+frontend: ## Build frontend and copy to static
 	@echo "Building frontend..."
 	cd $(WEB_DIR) && npm install && npm run build
-	@echo "Frontend build complete: $(WEB_DIST)"
+	@echo "Copying frontend to pkg/server/static..."
+	rm -rf pkg/server/static
+	cp -r $(WEB_DIST) pkg/server/static
+	@echo "Frontend build complete"
 
 frontend-dev: ## Run frontend in dev mode
 	@echo "Starting frontend dev server..."
