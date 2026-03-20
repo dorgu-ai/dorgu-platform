@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/dorgu-ai/dorgu-platform/pkg/api"
+	"github.com/dorgu-ai/dorgu-platform/pkg/watcher"
 	"github.com/gorilla/mux"
 )
 
@@ -30,18 +32,6 @@ func NewServer(config *Config) *Server {
 		Context:    config.Context,
 		router:     mux.NewRouter(),
 	}
-}
-
-// setupRoutes configures all HTTP routes.
-func (s *Server) setupRoutes() {
-	// API routes
-	clustersHandler := api.NewClustersHandler()
-	clustersHandler.RegisterRoutes(s.router)
-
-	// Static file serving (frontend)
-	// Agent 4 will build the frontend into web/dist
-	// For now, serve a placeholder or the embedded static folder
-	s.setupStaticRoutes()
 }
 
 // setupStaticRoutes serves static files for the frontend.
@@ -82,10 +72,27 @@ func (s *Server) servePlaceholder(w http.ResponseWriter, r *http.Request) {
 
 // Start starts the HTTP server.
 func (s *Server) Start() error {
-	s.setupRoutes()
+	// Initialize K8s watcher
+	w, err := watcher.NewWatcher(s.KubeConfig, s.Context)
+	if err != nil {
+		return fmt.Errorf("failed to create watcher: %w", err)
+	}
+
+	// Start watcher in background
+	ctx := context.Background()
+	if err := w.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start watcher: %w", err)
+	}
+
+	// Setup routes with watcher
+	clustersHandler := api.NewClustersHandler(w)
+	clustersHandler.RegisterRoutes(s.router)
+
+	s.setupStaticRoutes()
 
 	addr := fmt.Sprintf(":%d", s.Port)
 	log.Printf("Dorgu Platform starting on http://localhost%s", addr)
+	log.Printf("Watching ClusterPersona CRDs in current kube-context")
 	log.Printf("API available at http://localhost%s/api/clusters", addr)
 
 	return http.ListenAndServe(addr, s.router)

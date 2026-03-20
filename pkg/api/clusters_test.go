@@ -11,7 +11,7 @@ import (
 )
 
 func TestListClusters(t *testing.T) {
-	handler := NewClustersHandler()
+	handler := NewClustersHandler(nil)
 	req := httptest.NewRequest("GET", "/api/clusters", nil)
 	w := httptest.NewRecorder()
 
@@ -32,7 +32,7 @@ func TestListClusters(t *testing.T) {
 }
 
 func TestGetCluster_NotFound(t *testing.T) {
-	handler := NewClustersHandler()
+	handler := NewClustersHandler(nil)
 
 	router := mux.NewRouter()
 	handler.RegisterRoutes(router)
