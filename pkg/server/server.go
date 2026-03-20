@@ -11,6 +11,7 @@ import (
 
 	"github.com/dorgu-ai/dorgu-platform/pkg/api"
 	"github.com/dorgu-ai/dorgu-platform/pkg/watcher"
+	ws "github.com/dorgu-ai/dorgu-platform/pkg/websocket"
 	"github.com/gorilla/mux"
 )
 
@@ -24,6 +25,7 @@ type Server struct {
 	Context    string
 	router     *mux.Router
 	watcher    *watcher.Watcher
+	wsHub      *ws.Hub
 }
 
 // NewServer creates a new server instance.
@@ -41,6 +43,9 @@ func (s *Server) setupRoutes() {
 	// API routes
 	clustersHandler := api.NewClustersHandler(s.watcher)
 	clustersHandler.RegisterRoutes(s.router)
+
+	// WebSocket endpoint
+	s.router.HandleFunc("/ws", s.wsHub.ServeWS)
 
 	// Static file serving (frontend)
 	s.setupStaticRoutes()
@@ -131,12 +136,40 @@ func (s *Server) Start() error {
 
 	s.watcher = w
 
+	// Initialize WebSocket hub
+	s.wsHub = ws.NewHub()
+	go s.wsHub.Run()
+
+	// Bridge watcher events to WebSocket hub
+	go func() {
+		eventTypeMap := map[string]string{
+			"added":    "cluster.added",
+			"modified": "cluster.updated",
+			"deleted":  "cluster.deleted",
+		}
+		for event := range w.Events() {
+			wsType, ok := eventTypeMap[event.Type]
+			if !ok {
+				wsType = event.Type
+			}
+			name := ""
+			if event.Cluster != nil {
+				name = event.Cluster.Name
+			}
+			log.Printf("Broadcasting WebSocket event: %s - %s", wsType, name)
+			s.wsHub.Broadcast(wsType, map[string]string{
+				"name": name,
+			})
+		}
+	}()
+
 	// Setup routes with watcher
 	s.setupRoutes()
 
 	addr := fmt.Sprintf(":%d", s.Port)
 	log.Printf("Dorgu Platform starting on http://localhost%s", addr)
 	log.Printf("API available at http://localhost%s/api/clusters", addr)
+	log.Printf("WebSocket available at ws://localhost%s/ws", addr)
 	log.Printf("Frontend available at http://localhost%s/", addr)
 
 	return http.ListenAndServe(addr, s.router)

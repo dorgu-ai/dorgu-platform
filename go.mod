@@ -4,6 +4,7 @@ go 1.25.6
 
 require (
 	github.com/gorilla/mux v1.8.1
+	github.com/gorilla/websocket v1.5.3
 	k8s.io/apimachinery v0.29.0
 	k8s.io/client-go v0.29.0
 )
