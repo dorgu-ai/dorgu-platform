@@ -52,11 +52,17 @@ make build
 ./bin/dorgu-platform serve
 ```
 
-### Use via dorgu CLI (After Agent 8)
+### Use via dorgu CLI (Recommended)
 
 ```bash
-# Install dorgu CLI with platform support
-dorgu platform serve --port 8080
+# Start the platform
+dorgu platform serve
+
+# With custom port
+dorgu platform serve --port 3000
+
+# With specific kubeconfig/context
+dorgu platform serve --kubeconfig ~/.kube/custom-config --context prod-cluster
 ```
 
 ## Project Structure
@@ -66,8 +72,10 @@ dorgu-platform/
 ├── cmd/
 │   └── server/          # Standalone server binary
 ├── pkg/
-│   ├── server/          # Embeddable server package
-│   ├── api/             # HTTP handlers, WebSocket
+│   ├── platform/        # Public API for embedding in dorgu CLI
+│   ├── server/          # HTTP server and static file serving
+│   ├── api/             # HTTP handlers
+│   ├── websocket/       # WebSocket hub and client
 │   ├── watcher/         # K8s client-go Informer for ClusterPersona
 │   └── models/          # Data models
 ├── web/                 # React frontend
@@ -101,6 +109,36 @@ make test
 # Frontend tests
 cd web
 npm run test
+```
+
+## API Endpoints
+
+- `GET /api/clusters` — List all ClusterPersona resources
+- `GET /api/clusters/:name` — Get single ClusterPersona
+- `GET /ws` — WebSocket endpoint for real-time updates
+
+## Embedding
+
+The platform can be embedded into any Go application via the `pkg/platform` package:
+
+```go
+import "github.com/dorgu-ai/dorgu-platform/pkg/platform"
+
+config := platform.Config{
+    Port:       "8080",
+    Kubeconfig: "",       // defaults to $KUBECONFIG or ~/.kube/config
+    Context:    "",       // defaults to current context
+}
+
+srv, err := platform.NewServer(config)
+if err != nil {
+    log.Fatal(err)
+}
+
+ctx := context.Background()
+if err := srv.Start(ctx); err != nil {
+    log.Fatal(err)
+}
 ```
 
 ## Phase 1 MVP Scope
